@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم — BX PattyHouse</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--red:#D42B2B;--red2:#FF3B3B;--black:#0A0A0A;--gray:#141414;--gray2:#1E1E1E;--gray3:#282828;--white:#fff;--muted:#888;--green:#25D366}
+body{font-family:'Cairo',sans-serif;background:var(--black);color:var(--white);min-height:100vh}
+
+/* LOGIN */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:var(--gray);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:40px;width:100%;max-width:380px;text-align:center}
+.login-logo{font-size:22px;font-weight:900;margin-bottom:6px}
+.login-logo span{color:var(--red)}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+.login-box input{width:100%;background:var(--black);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:6px;padding:12px 14px;font-family:'Cairo',sans-serif;font-size:15px;text-align:center;outline:none;transition:border-color .2s;margin-bottom:14px;letter-spacing:3px}
+.login-box input:focus{border-color:var(--red)}
+.login-btn{width:100%;background:var(--red);border:none;color:#fff;padding:13px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s}
+.login-btn:hover{background:var(--red2)}
+.login-err{color:var(--red);font-size:13px;margin-top:10px;display:none}
+
+/* ADMIN */
+.admin{display:none}
+.topbar{background:var(--gray);border-bottom:2px solid var(--red);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-logo{font-size:16px;font-weight:900}
+.topbar-logo span{color:var(--red)}
+.logout-btn{background:none;border:1px solid rgba(255,255,255,0.15);color:#aaa;padding:6px 14px;border-radius:4px;font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;transition:all .2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+.admin-body{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - 58px)}
+
+/* SIDEBAR */
+.sidebar{background:var(--gray);border-left:1px solid rgba(255,255,255,0.06);padding:20px 0}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:12px 20px;font-size:14px;font-weight:700;color:#aaa;cursor:pointer;transition:all .2s;border-right:3px solid transparent}
+.sidebar-item:hover{color:#fff;background:var(--gray2)}
+.sidebar-item.active{color:var(--red);background:rgba(212,43,43,0.08);border-right-color:var(--red)}
+.sidebar-icon{font-size:18px}
+
+/* MAIN */
+.main{padding:28px;overflow-y:auto}
+.page{display:none}
+.page.active{display:block}
+.page-title{font-size:22px;font-weight:900;margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+
+/* CARDS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:var(--gray2);border-radius:8px;padding:20px;border:1px solid rgba(255,255,255,0.05)}
+.stat-num{font-size:32px;font-weight:900;color:var(--red)}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* FORM CARD */
+.form-card{background:var(--gray2);border-radius:10px;padding:24px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.06)}
+.form-card h3{font-size:16px;font-weight:900;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.5px}
+.field input,.field textarea,.field select{width:100%;background:var(--black);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:6px;padding:10px 12px;font-family:'Cairo',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--red)}
+.field textarea{resize:vertical;min-height:70px}
+.field input::placeholder,.field textarea::placeholder{color:#444}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* IMG PREVIEW */
+.img-preview{width:100%;height:140px;background:var(--black);border:1px solid rgba(255,255,255,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:10px;overflow:hidden;position:relative}
+.img-preview img{width:100%;height:100%;object-fit:cover}
+.img-clear{position:absolute;top:6px;left:6px;background:var(--red);border:none;color:#fff;width:24px;height:24px;border-radius:50%;font-size:14px;cursor:pointer;display:none;align-items:center;justify-content:center}
+.img-preview:hover .img-clear{display:flex}
+
+/* BUTTONS */
+.btn-save{background:var(--red);border:none;color:#fff;padding:11px 24px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s}
+.btn-save:hover{background:var(--red2)}
+.btn-ghost{background:none;border:1px solid rgba(255,255,255,0.15);color:#aaa;padding:11px 24px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer;transition:all .2s}
+.btn-ghost:hover{border-color:var(--red);color:var(--red)}
+.btns-row{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
+
+/* ITEMS LIST */
+.items-list{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.item-row{background:var(--black);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px}
+.item-thumb{width:52px;height:52px;border-radius:6px;background:var(--gray2);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;flex-shrink:0}
+.item-thumb img{width:100%;height:100%;object-fit:cover}
+.item-info{flex:1}
+.item-name{font-size:14px;font-weight:900}
+.item-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.item-price{font-size:14px;font-weight:900;color:var(--red);margin-left:auto;flex-shrink:0}
+.item-actions{display:flex;gap:6px;margin-right:8px}
+.act-btn{background:var(--gray2);border:none;color:#aaa;width:30px;height:30px;border-radius:4px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.act-btn:hover{background:var(--red);color:#fff}
+
+/* BADGE */
+.badge{display:inline-block;background:rgba(212,43,43,0.15);color:var(--red);font-size:10px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:.5px}
+
+/* NOTIF */
+.notif{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;font-weight:700;z-index:500;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none}
+.notif.show{transform:translateY(0);opacity:1}
+.notif.err{background:var(--red)}
+
+@media(max-width:700px){
+  .admin-body{grid-template-columns:1fr}
+  .sidebar{display:flex;overflow-x:auto;padding:0;border-left:none;border-bottom:1px solid rgba(255,255,255,0.06)}
+  .sidebar-item{flex-direction:column;gap:4px;padding:12px 16px;font-size:11px;border-right:none;border-bottom:3px solid transparent;white-space:nowrap}
+  .sidebar-item.active{border-bottom-color:var(--red);border-right:none}
+  .row2,.row3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="notif" id="notif"></div>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">BX <span>PATTY</span>HOUSE</div>
+    <div class="login-sub">لوحة التحكم — أدخل كلمة السر</div>
+    <input type="password" id="passInput" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="login-btn" onclick="doLogin()">دخول</button>
+    <div class="login-err" id="loginErr">❌ كلمة السر غير صحيحة</div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="admin" id="adminPanel">
+  <div class="topbar">
+    <div class="topbar-logo">BX <span>PATTY</span>HOUSE — لوحة التحكم</div>
+    <button class="logout-btn" onclick="doLogout()">تسجيل خروج</button>
+  </div>
+  <div class="admin-body">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-item active" onclick="showPage('dashboard')"><span class="sidebar-icon">📊</span>الرئيسية</div>
+      <div class="sidebar-item" onclick="showPage('menu')"><span class="sidebar-icon">🍔</span>المنيو</div>
+      <div class="sidebar-item" onclick="showPage('branches')"><span class="sidebar-icon">📍</span>الفروع</div>
+      <div class="sidebar-item" onclick="showPage('settings')"><span class="sidebar-icon">⚙️</span>الإعدادات</div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-title">مرحباً بك 👋</div>
+        <div class="page-sub">إدارة موقع BX PattyHouse</div>
+        <div class="stats">
+          <div class="stat-card"><div class="stat-num" id="statMenu">0</div><div class="stat-label">أصناف في المنيو</div></div>
+          <div class="stat-card"><div class="stat-num" id="statBranch">0</div><div class="stat-label">فروع</div></div>
+          <div class="stat-card"><div class="stat-num" id="statCats">0</div><div class="stat-label">فئات</div></div>
+          <div class="stat-card"><div class="stat-num">🔥</div><div class="stat-label">الموقع نشط</div></div>
+        </div>
+        <div class="form-card">
+          <h3>🔗 رابط الموقع</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">شارك هذا الرابط مع الزبائن</p>
+          <div style="background:var(--black);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:12px 14px;font-size:14px;color:#aaa;word-break:break-all" id="siteUrl">—</div>
+          <div class="btns-row" style="margin-top:12px">
+            <button class="btn-save" onclick="openSite()">🌐 فتح الموقع</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU PAGE -->
+      <div class="page" id="page-menu">
+        <div class="page-title">🍔 إدارة المنيو</div>
+        <div class="page-sub">أضف وعدّل أصناف المنيو</div>
+
+        <div class="form-card">
+          <h3 id="menuFormTitle">إضافة صنف جديد</h3>
+          <input type="hidden" id="editId" />
+          <div class="row2">
+            <div class="field"><label>اسم الصنف *</label><input id="itemName" placeholder="مثال: BX Classic Burger" /></div>
+            <div class="field"><label>السعر (دينار عراقي) *</label><input id="itemPrice" type="number" placeholder="5000" /></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>الفئة</label><input id="itemCat" placeholder="مثال: برغر، بوكسات، مشروبات" /></div>
+            <div class="field"><label>إيموجي (اختياري)</label><input id="itemEmoji" placeholder="🍔" maxlength="4" /></div>
+          </div>
+          <div class="field"><label>وصف قصير</label><textarea id="itemDesc" placeholder="وصف الصنف..."></textarea></div>
+          <div class="field">
+            <label>صورة الصنف</label>
+            <div class="img-preview" id="imgPreview">
+              <span id="imgEmoji">📷</span>
+              <img id="imgPreviewImg" src="" style="display:none" alt="">
+              <button class="img-clear" id="imgClear" onclick="clearImg()">✕</button>
+            </div>
+            <input type="file" id="imgFile" accept="image/*" onchange="handleImg(this)" style="display:none"/>
+            <div class="btns-row">
+              <button class="btn-ghost" onclick="document.getElementById('imgFile').click()">📷 رفع صورة</button>
+              <input id="imgUrl" placeholder="أو الصق رابط صورة..." style="flex:1;background:var(--black);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:6px;padding:10px 12px;font-family:'Cairo',sans-serif;font-size:13px;outline:none" onchange="setImgUrl(this.value)" />
+            </div>
+          </div>
+          <div class="btns-row">
+            <button class="btn-save" onclick="saveItem()">💾 حفظ الصنف</button>
+            <button class="btn-ghost" onclick="resetItemForm()">إلغاء</button>
+          </div>
+        </div>
+
+        <div id="menuList"></div>
+      </div>
+
+      <!-- BRANCHES PAGE -->
+      <div class="page" id="page-branches">
+        <div class="page-title">📍 إدارة الفروع</div>
+        <div class="page-sub">أضف فروع المطعم وأرقام التواصل</div>
+
+        <div class="form-card">
+          <h3 id="branchFormTitle">إضافة فرع جديد</h3>
+          <input type="hidden" id="editBranchId" />
+          <div class="row2">
+            <div class="field"><label>اسم الفرع *</label><input id="branchName" placeholder="مثال: فرع المنصور" /></div>
+            <div class="field"><label>المنطقة</label><input id="branchArea" placeholder="مثال: شارع الأميرات، المنصور" /></div>
+          </div>
+          <div class="field"><label>رقم الهاتف</label><input id="branchPhone" placeholder="07729300222" /></div>
+          <div class="btns-row">
+            <button class="btn-save" onclick="saveBranch()">💾 حفظ الفرع</button>
+            <button class="btn-ghost" onclick="resetBranchForm()">إلغاء</button>
+          </div>
+        </div>
+
+        <div id="branchList"></div>
+      </div>
+
+      <!-- SETTINGS PAGE -->
+      <div class="page" id="page-settings">
+        <div class="page-title">⚙️ الإعدادات</div>
+        <div class="page-sub">إعدادات الموقع والتواصل</div>
+
+        <div class="form-card">
+          <h3>معلومات التواصل</h3>
+          <div class="field"><label>رقم واتساب (لاستقبال الطلبات)</label><input id="setWa" placeholder="07729300222" /></div>
+          <div class="field"><label>رقم الهاتف (يظهر في الموقع)</label><input id="setPhone" placeholder="07729300222" /></div>
+          <div class="field"><label>أوقات العمل</label><input id="setHours" placeholder="١٢ ظهراً – ١٢ منتصف الليل" /></div>
+          <div class="btns-row">
+            <button class="btn-save" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>🗑️ خيارات متقدمة</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">تصدير أو مسح البيانات</p>
+          <div class="btns-row">
+            <button class="btn-ghost" onclick="exportData()">📤 تصدير البيانات</button>
+            <button class="btn-ghost" onclick="importData()">📥 استيراد بيانات</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="doImport(this)" />
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /admin-body -->
+</div><!-- /admin -->
+
+<script>
+const PASS='bx';
+
+// ── AUTH ──────────────────────────────────────────────
+function doLogin(){
+  const v=document.getElementById('passInput').value;
+  if(v===PASS){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    loadAll();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+    document.getElementById('passInput').value='';
+  }
+}
+function doLogout(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('adminPanel').style.display='none';
+  document.getElementById('passInput').value='';
+}
+
+// ── DATA ──────────────────────────────────────────────
+function getData(){
+  try{return JSON.parse(localStorage.getItem('bxData'))||{menu:[],branches:[],whatsapp:'',phone:'',hours:''};}
+  catch(e){return{menu:[],branches:[],whatsapp:'',phone:'',hours:''};}
+}
+function saveData(d){localStorage.setItem('bxData',JSON.stringify(d));}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+
+// ── PAGES ──────────────────────────────────────────────
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.sidebar-item').forEach(el=>{if(el.textContent.includes(getLabel(p)))el.classList.add('active');});
+  if(p==='menu')renderMenuList();
+  if(p==='branches')renderBranchList();
+  if(p==='settings')loadSettings();
+  if(p==='dashboard')updateStats();
+}
+function getLabel(p){return{dashboard:'الرئيسية',menu:'المنيو',branches:'الفروع',settings:'الإعدادات'}[p]||'';}
+
+// ── STATS ──────────────────────────────────────────────
+function updateStats(){
+  const d=getData();
+  document.getElementById('statMenu').textContent=d.menu.length;
+  document.getElementById('statBranch').textContent=(d.branches||[]).length;
+  document.getElementById('statCats').textContent=[...new Set(d.menu.map(i=>i.cat).filter(Boolean))].length;
+  const url=location.href.replace('admin.html','index.html').replace(/admin\/?$/,'');
+  document.getElementById('siteUrl').textContent=url;
+}
+function openSite(){
+  const url=location.href.replace('admin.html','index.html').replace(/admin\/?$/,'');
+  window.open(url,'_blank');
+}
+
+// ── IMG ───────────────────────────────────────────────
+let currentImg='';
+function handleImg(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{setImg(e.target.result);};
+  reader.readAsDataURL(file);
+}
+function setImgUrl(url){if(url)setImg(url);}
+function setImg(src){
+  currentImg=src;
+  const pi=document.getElementById('imgPreviewImg');
+  const pe=document.getElementById('imgEmoji');
+  pi.src=src; pi.style.display='block'; pe.style.display='none';
+}
+function clearImg(){
+  currentImg='';
+  document.getElementById('imgPreviewImg').style.display='none';
+  document.getElementById('imgEmoji').style.display='block';
+  document.getElementById('imgEmoji').textContent='📷';
+  document.getElementById('imgUrl').value='';
+  document.getElementById('imgFile').value='';
+}
+
+// ── MENU ──────────────────────────────────────────────
+function saveItem(){
+  const name=document.getElementById('itemName').value.trim();
+  const price=document.getElementById('itemPrice').value.trim();
+  if(!name||!price){showNotif('❌ الاسم والسعر مطلوبان','err');return;}
+  const d=getData();
+  const editId=document.getElementById('editId').value;
+  const item={
+    id:editId||uid(),
+    name,price:Number(price),
+    cat:document.getElementById('itemCat').value.trim(),
+    desc:document.getElementById('itemDesc').value.trim(),
+    emoji:document.getElementById('itemEmoji').value.trim()||'🍔',
+    img:currentImg,
+  };
+  if(editId){
+    const idx=d.menu.findIndex(i=>i.id===editId);
+    if(idx>-1)d.menu[idx]=item;
+  } else {
+    d.menu.push(item);
+  }
+  saveData(d);
+  resetItemForm();
+  renderMenuList();
+  updateStats();
+  showNotif('✅ تم حفظ الصنف');
+}
+
+function editItem(id){
+  const d=getData();
+  const item=d.menu.find(i=>i.id===id);
+  if(!item)return;
+  document.getElementById('editId').value=id;
+  document.getElementById('itemName').value=item.name;
+  document.getElementById('itemPrice').value=item.price;
+  document.getElementById('itemCat').value=item.cat||'';
+  document.getElementById('itemDesc').value=item.desc||'';
+  document.getElementById('itemEmoji').value=item.emoji||'';
+  document.getElementById('menuFormTitle').textContent='✏️ تعديل الصنف';
+  if(item.img){setImg(item.img);}else{clearImg();}
+  document.querySelector('.form-card').scrollIntoView({behavior:'smooth'});
+}
+
+function deleteItem(id){
+  if(!confirm('حذف هذا الصنف؟'))return;
+  const d=getData();
+  d.menu=d.menu.filter(i=>i.id!==id);
+  saveData(d);
+  renderMenuList();
+  updateStats();
+  showNotif('✅ تم الحذف');
+}
+
+function resetItemForm(){
+  document.getElementById('editId').value='';
+  document.getElementById('itemName').value='';
+  document.getElementById('itemPrice').value='';
+  document.getElementById('itemCat').value='';
+  document.getElementById('itemDesc').value='';
+  document.getElementById('itemEmoji').value='';
+  document.getElementById('menuFormTitle').textContent='إضافة صنف جديد';
+  clearImg();
+}
+
+function renderMenuList(){
+  const d=getData();
+  const el=document.getElementById('menuList');
+  if(!d.menu.length){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:14px">لا توجد أصناف بعد — أضف أول صنف أعلاه</div>';
+    return;
+  }
+  // group by category
+  const cats=[...new Set(d.menu.map(i=>i.cat||'بدون فئة'))];
+  el.innerHTML=cats.map(cat=>`
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">${cat}</div>
+      <div class="items-list">
+        ${d.menu.filter(i=>(i.cat||'بدون فئة')===cat).map(item=>`
+          <div class="item-row">
+            <div class="item-thumb">
+              ${item.img
+                ?`<img src="${item.img}" alt="" onerror="this.parentElement.innerHTML='${item.emoji||'🍔'}'">`
+                :(item.emoji||'🍔')}
+            </div>
+            <div class="item-info">
+              <div class="item-name">${item.name}</div>
+              <div class="item-meta">${item.desc||'—'}</div>
+            </div>
+            <div class="item-price">${Number(item.price).toLocaleString()} د.ع</div>
+            <div class="item-actions">
+              <button class="act-btn" onclick="editItem('${item.id}')" title="تعديل">✏️</button>
+              <button class="act-btn" onclick="deleteItem('${item.id}')" title="حذف">🗑️</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── BRANCHES ──────────────────────────────────────────
+function saveBranch(){
+  const name=document.getElementById('branchName').value.trim();
+  if(!name){showNotif('❌ اسم الفرع مطلوب','err');return;}
+  const d=getData();
+  if(!d.branches)d.branches=[];
+  const editId=document.getElementById('editBranchId').value;
+  const branch={
+    id:editId||uid(),
+    name,
+    area:document.getElementById('branchArea').value.trim(),
+    phone:document.getElementById('branchPhone').value.trim(),
+  };
+  if(editId){
+    const idx=d.branches.findIndex(b=>b.id===editId);
+    if(idx>-1)d.branches[idx]=branch;
+  } else {
+    d.branches.push(branch);
+  }
+  saveData(d);
+  resetBranchForm();
+  renderBranchList();
+  updateStats();
+  showNotif('✅ تم حفظ الفرع');
+}
+
+function editBranch(id){
+  const d=getData();
+  const b=(d.branches||[]).find(b=>b.id===id);
+  if(!b)return;
+  document.getElementById('editBranchId').value=id;
+  document.getElementById('branchName').value=b.name;
+  document.getElementById('branchArea').value=b.area||'';
+  document.getElementById('branchPhone').value=b.phone||'';
+  document.getElementById('branchFormTitle').textContent='✏️ تعديل الفرع';
+}
+
+function deleteBranch(id){
+  if(!confirm('حذف هذا الفرع؟'))return;
+  const d=getData();
+  d.branches=(d.branches||[]).filter(b=>b.id!==id);
+  saveData(d);
+  renderBranchList();
+  updateStats();
+  showNotif('✅ تم الحذف');
+}
+
+function resetBranchForm(){
+  document.getElementById('editBranchId').value='';
+  document.getElementById('branchName').value='';
+  document.getElementById('branchArea').value='';
+  document.getElementById('branchPhone').value='';
+  document.getElementById('branchFormTitle').textContent='إضافة فرع جديد';
+}
+
+function renderBranchList(){
+  const d=getData();
+  const el=document.getElementById('branchList');
+  const branches=d.branches||[];
+  if(!branches.length){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:14px">لا توجد فروع بعد — أضف أول فرع أعلاه</div>';
+    return;
+  }
+  el.innerHTML='<div class="items-list">'+branches.map(b=>`
+    <div class="item-row">
+      <div class="item-thumb" style="font-size:22px">📍</div>
+      <div class="item-info">
+        <div class="item-name">${b.name}</div>
+        <div class="item-meta">${b.area||'—'} ${b.phone?'• '+b.phone:''}</div>
+      </div>
+      <div class="item-actions">
+        <button class="act-btn" onclick="editBranch('${b.id}')">✏️</button>
+        <button class="act-btn" onclick="deleteBranch('${b.id}')">🗑️</button>
+      </div>
+    </div>
+  `).join('')+'</div>';
+}
+
+// ── SETTINGS ──────────────────────────────────────────
+function loadSettings(){
+  const d=getData();
+  document.getElementById('setWa').value=d.whatsapp||'';
+  document.getElementById('setPhone').value=d.phone||'';
+  document.getElementById('setHours').value=d.hours||'';
+}
+function saveSettings(){
+  const d=getData();
+  d.whatsapp=document.getElementById('setWa').value.trim();
+  d.phone=document.getElementById('setPhone').value.trim();
+  d.hours=document.getElementById('setHours').value.trim();
+  saveData(d);
+  showNotif('✅ تم حفظ الإعدادات');
+}
+
+// ── EXPORT / IMPORT ───────────────────────────────────
+function exportData(){
+  const d=getData();
+  const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='bx-data.json';
+  a.click();
+  showNotif('✅ تم تصدير البيانات');
+}
+function importData(){document.getElementById('importFile').click();}
+function doImport(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      saveData(d);
+      loadAll();
+      showNotif('✅ تم استيراد البيانات');
+    }catch(err){showNotif('❌ ملف غير صالح','err');}
+  };
+  reader.readAsText(file);
+}
+
+// ── NOTIF ──────────────────────────────────────────────
+function showNotif(msg,type){
+  const n=document.getElementById('notif');
+  n.textContent=msg;
+  n.className='notif'+(type?' '+type:'');
+  n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),2500);
+}
+
+// ── INIT ──────────────────────────────────────────────
+function loadAll(){
+  updateStats();
+  renderMenuList();
+  renderBranchList();
+  loadSettings();
+}
+</script>
+</body>
+</html>
